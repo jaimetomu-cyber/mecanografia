@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comecocos - Mecanografía Martín T.H</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+            background-color: #e0f7fa;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Contenedor del Juego */
+        .contenedor-juego {
+            background: #000; /* Fondo negro como el arcade original */
+            border-radius: 20px;
+            padding: 20px;
+            margin: 0 auto 20px auto;
+            max-width: 900px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            border: 5px solid #ffeb3b;
+        }
+
+        h2 {
+            color: #ffeb3b;
+            margin-top: 0;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px #d32f2f;
+        }
+
+        p.instrucciones {
+            font-size: 1.2rem;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        /* Ventana del juego ajustada sin scroll */
+        iframe {
+            width: 100%;
+            height: 520px; /* Aumentamos el alto para que quepa todo el tablero */
+            border: none;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        /* Botón de volver */
+        .btn-volver {
+            display: inline-block;
+            font-size: 1.2rem;
+            padding: 15px 25px;
+            border-radius: 15px;
+            text-decoration: none;
+            background-color: #ffb300;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .btn-volver:hover {
+            transform: scale(1.05);
+            background-color: #ffa000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-juego">
+        <h2>🟡 ¡PAC-MAN! 👻</h2>
+        <p class="instrucciones">Usa las <b>flechas del teclado</b> ⬅️ ➡️ ⬆️ ⬇️ para moverte y comer todos los puntos.</p>
+        
+        <!-- Añadimos scrolling="no" para quitar la barra obligatoriamente -->
+        <iframe id="juego-pacman" src="https://macek.github.io/google_pacman/" title="Pac-Man Classic" scrolling="no"></iframe>
+    </div>
+
+    <a href="index.html#juegos" class="btn-volver">⬅️ Volver a los Juegos</a>
+
+    <script>
+        // Enfocar el juego automáticamente
+        window.onload = function() {
+            document.getElementById('juego-pacman').focus();
+        };
+    </script>
+</body>
+</html>
