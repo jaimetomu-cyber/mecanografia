@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mecanografía Progresiva</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #e0e0e0;
+  min-height: 100vh;
+  display: flex;
+  padding: 0;
+}
+.panel-lateral {
+  width: 250px;
+  background: rgba(10,10,30,0.95);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(255,255,255,0.1);
+  padding: 20px 15px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 100;
+}
+.panel-lateral::-webkit-scrollbar { width: 6px; }
+.panel-lateral::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+}
+.panel-lateral::-webkit-scrollbar-thumb {
+  background: rgba(0,212,255,0.3);
+  border-radius: 10px;
+}
+.panel-lateral h3 {
+  color: #00d4ff;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  text-align: center;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(0,212,255,0.3);
+}
+.niveles-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.nivel-btn {
+  padding: 12px 15px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.03);
+  color: #888;
+  transition: all 0.3s;
+  text-align: left;
+  position: relative;
+}
+.nivel-btn:hover { 
+  border-color: #00d4ff; 
+  color: #00d4ff; 
+  background: rgba(0,212,255,0.1);
+  transform: translateX(5px);
+}
+.nivel-btn.activo {
+  background: linear-gradient(135deg, #00d4ff, #0080ff);
+  color: white;
+  border-color: transparent;
+  font-weight: bold;
+  box-shadow: 0 0 15px rgba(0,212,255,0.5);
+  transform: translateX(5px);
+}
+.nivel-btn.activo::before {
+  content: '▶';
+  position: absolute;
+  left: -10px;
+  color: #00d4ff;
+}
+.nivel-btn.completado {
+  background: linear-gradient(135deg, #00b894, #00cec9);
+  color: white;
+  border-color: transparent;
+}
+.nivel-btn.completado::after {
+  content: '✓';
+  position: absolute;
+  right: 10px;
+  font-weight: bold;
+}
+.contenido-principal {
+  margin-left: 250px;
+  flex: 1;
+  padding: 20px;
+  min-height: 100vh;
+}
+.header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+h1 { 
+  color: #00d4ff; 
+  font-size: 2.2rem; 
+  margin-bottom: 8px; 
+  text-shadow: 0 0 20px rgba(0,212,255,0.4); 
+}
+
+h1 a { 
+	color: #00d4ff; 
+	font-size: 3rem; 
+	text-decoration: none; /* Quita el subrayado del enlace */
+	display: inline-block;
+	margin-bottom: 5px;
+	transition: transform 0.2s;
+}
+h1 a:hover {
+	transform: scale(1.05); /* Efecto de que se puede pulsar */
+}
+		
+.subtitulo { color: #888; font-size: 0.95rem; }
+.stats {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.stat {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 12px 24px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+.stat:hover { transform: translateY(-3px); }
+.stat-val { font-size: 2rem; font-weight: bold; color: #00d4ff; }
+.stat-val.ppm { color: #ffd700; }
+.stat-lbl { 
+  font-size: 0.7rem; 
+  color: #888; 
+  text-transform: uppercase; 
+  letter-spacing: 1px; 
+  margin-top: 4px; 
+}
+.area-central {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.nivel-info {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 18px 25px;
+  text-align: center;
+}
+.nivel-info h2 { color: #00d4ff; font-size: 1.2rem; margin-bottom: 6px; }
+.nivel-info p { color: #aaa; font-size: 0.9rem; }
+.ejercicio-box {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 35px;
+}
+.instruccion {
+  text-align: center;
+  color: #ffd700;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: rgba(255,215,0,0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255,215,0,0.2);
+}
+.texto-display {
+  font-family: 'Courier New', monospace;
+  font-size: 1.5rem;
+  letter-spacing: 4px;
+  text-align: center;
+  line-height: 2.8;
+  margin-bottom: 20px;
+  min-height: 80px;
+  word-break: break-all;
+}
+.char {
+  display: inline-block;
+  padding: 3px 2px;
+  border-radius: 4px;
+  transition: all 0.15s;
+  position: relative;
+}
+.char.pendiente { color: #444; }
+.char.actual {
+  color: #ffd700;
+  background: rgba(255,215,0,0.2);
+  border-bottom: 3px solid #ffd700;
+  animation: pulso 1.2s infinite;
+  transform: scale(1.15);
+}
+.char.actual.mano-izq::before {
+  content: '👈';
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1rem;
+}
+.char.actual.mano-der::before {
+  content: '👉';
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1rem;
+}
+.char.correcto { color: #00b894; font-weight: bold; }
+.char.incorrecto {
+  color: #ff6b6b;
+  background: rgba(255,107,107,0.25);
+  font-weight: bold;
+}
+@keyframes pulso {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.barra-container {
+  background: rgba(15,52,96,0.5);
+  border-radius: 12px;
+  height: 10px;
+  margin-top: 15px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+.barra-progreso {
+  height: 100%;
+  background: linear-gradient(90deg, #00d4ff, #00b894);
+  border-radius: 12px;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 10px rgba(0,212,255,0.6);
+}
+.mensaje {
+  text-align: center;
+  min-height: 35px;
+  font-size: 1.05rem;
+  margin-top: 15px;
+  font-weight: 500;
+}
+.mensaje.error { color: #ff6b6b; }
+.mensaje.exito { color: #00b894; font-weight: bold; font-size: 1.2rem; }
+.mensaje.auto { color: #ffd700; font-weight: bold; animation: parpadeo 0.8s infinite; }
+@keyframes parpadeo {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.botones {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+button {
+  background: rgba(0,212,255,0.15);
+  color: #00d4ff;
+  border: 2px solid #00d4ff;
+  border-radius: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+button:hover:not(:disabled) {
+  background: #00d4ff;
+  color: #1a1a2e;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,212,255,0.4);
+}
+button:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  border-color: #444;
+  color: #444;
+  background: transparent;
+}
+button:focus {
+  outline: 3px solid rgba(0,212,255,0.5);
+  outline-offset: 2px;
+}
+.ayuda-manos {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.mano {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 12px 20px;
+  text-align: center;
+  min-width: 150px;
+}
+.mano.izquierda { border-left: 4px solid #00d4ff; }
+.mano.derecha { border-left: 4px solid #ff6b9d; }
+.mano-titulo {
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+.mano.izquierda .mano-titulo { color: #00d4ff; }
+.mano.derecha .mano-titulo { color: #ff6b9d; }
+.mano-teclas {
+  font-family: 'Courier New', monospace;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 3px;
+}
+@media (max-width: 1000px) {
+  .panel-lateral { 
+    width: 100%; 
+    position: relative; 
+    height: auto; 
+    border-right: none; 
+    border-bottom: 1px solid rgba(255,255,255,0.1); 
+  }
+  .contenido-principal { margin-left: 0; }
+  .niveles-lista { flex-direction: row; flex-wrap: wrap; }
+  .nivel-btn:hover { transform: scale(1.05); }
+}
+  /* Botón de volver */
+        .btn-volver {
+            display: inline-block;
+            margin-top: 25px;
+            font-size: 1.2rem;
+            padding: 15px 25px;
+            border-radius: 15px;
+            text-decoration: none;
+            background-color: #ffb300;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .btn-volver:hover {
+            transform: scale(1.05);
+            background-color: #ffa000;
+        }
+</style>
+</head>
+<body>
+<div class="panel-lateral">
+  <h3>📚 Niveles</h3>
+  <div class="niveles-lista" id="nivelesLista"></div>
+</div>
+<div class="contenido-principal">
+  <div class="header">
+	<h1><a href="index.html" title="Volver al Inicio">⌨️ Mecanografía Progresiva</a></h1>
+	
+    <p class="subtitulo">Aprende desde cero hasta textos completos</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="statAciertos">0</div><div class="stat-lbl">Aciertos</div></div>
+    <div class="stat"><div class="stat-val" id="statErrores">0</div><div class="stat-lbl">Errores</div></div>
+    <div class="stat"><div class="stat-val" id="statPrecision">100%</div><div class="stat-lbl">Precisión</div></div>
+    <div class="stat"><div class="stat-val" id="statNivel">1</div><div class="stat-lbl">Nivel</div></div>
+    <div class="stat"><div class="stat-val ppm" id="statPPM">0</div><div class="stat-lbl">⚡ Puls/min</div></div>
+  </div>
+  <div class="area-central">
+    <div class="nivel-info">
+      <h2 id="nivelTitulo"></h2>
+      <p id="nivelDesc"></p>
+    </div>
+    <div class="ejercicio-box">
+      <div class="instruccion">💡 Escribe directamente • Pulsa <strong>Enter</strong> para continuar</div>
+      <div class="texto-display" id="textoDisplay"></div>
+      <div class="barra-container"><div class="barra-progreso" id="barraProgreso"></div></div>
+      <div class="mensaje" id="mensaje"></div>
+      <div class="botones">
+        <button id="btnReintentar" onclick="reintentar()">🔄 Reintentar</button>
+        <button id="btnSiguiente" onclick="siguienteEjercicio()" disabled>▶ Siguiente</button>
+        <button id="btnSiguienteNivel" onclick="siguienteNivel()" disabled>⬆ Siguiente nivel</button>
+      </div>
+    </div>
+    <div id="ayudaManos" class="ayuda-manos" style="display:none;">
+      <div class="mano izquierda">
+        <div class="mano-titulo">👈 Mano Izquierda</div>
+        <div class="mano-teclas" id="teclasIzq">A S D F</div>
+      </div>
+      <div class="mano derecha">
+        <div class="mano-titulo">👉 Mano Derecha</div>
+        <div class="mano-teclas" id="teclasDer">J K L Ñ</div>
+      </div>
+    </div>
+
+  </div>
+  	
+</div>
+ <br>
+<script>
+const niveles = [
+  {
+    titulo: "Nivel 1 - Teclas F y J",
+    desc: "Posición inicial: índice izquierdo en F, índice derecho en J",
+    ejercicios: ["fjfj", "jfjf", "ffjj", "jjff", "fjfjfj", "jfjfjf"],
+    mostrarManos: true
+  },
+  {
+    titulo: "Nivel 2 - Añadimos D y K",
+    desc: "Dedo medio izquierdo en D, dedo medio derecho en K",
+    ejercicios: ["dkdk", "kdkd", "ddkk", "kkdd", "fdkj", "jkdf"],
+    mostrarManos: true
+  },
+  {
+    titulo: "Nivel 3 - Añadimos S y L",
+    desc: "Dedo anular izquierdo en S, dedo anular derecho en L",
+    ejercicios: ["slsl", "lsls", "ssll", "llss", "sldk", "fsjl"],
+    mostrarManos: true
+  },
+  {
+    titulo: "Nivel 4 - Fila central completa",
+    desc: "Añadimos A y Ñ para completar la fila central",
+    ejercicios: ["asdf", "jklñ", "asdfasdf", "jklñjklñ", "asdfjklñ"],
+    mostrarManos: true
+  },
+  {
+    titulo: "Nivel 5 - Fila superior",
+    desc: "Teclas superiores: Q W E R T Y U I O P",
+    ejercicios: ["qwer", "yuio", "qwerty", "poiuyt", "qwertyuiop"],
+    mostrarManos: true
+  },
+  {
+    titulo: "Nivel 6 - Fila inferior",
+    desc: "Teclas inferiores: Z X C V B N M",
+    ejercicios: ["zxcv", "bnm", "zxcvbnm", "mnbvcxz"],
+    mostrarManos: true
+  },
+  {
+    titulo: "Nivel 7 - Todas las letras",
+    desc: "Combinación de todas las filas",
+    ejercicios: ["qazwsx", "plokij", "mnbvcx", "qweasdzxc"],
+    mostrarManos: false
+  },
+  {
+    titulo: "Nivel 8 - Palabras simples",
+    desc: "Primeras palabras reales",
+    ejercicios: ["sol", "mar", "luz", "pan", "sal", "rio"],
+    mostrarManos: false
+  },
+  {
+    titulo: "Nivel 9 - Palabras comunes",
+    desc: "Palabras cotidianas",
+    ejercicios: ["casa", "mesa", "libro", "agua", "perro", "gato"],
+    mostrarManos: false
+  },
+  {
+    titulo: "Nivel 10 - Palabras largas",
+    desc: "Palabras más complejas",
+    ejercicios: ["computadora", "teclado", "mecanografia", "ejercicio"],
+    mostrarManos: false
+  },
+  {
+    titulo: "Nivel 11 - Frases cortas",
+    desc: "Frases simples con espacios",
+    ejercicios: ["el cielo es azul", "me gusta leer", "hoy hace sol"],
+    mostrarManos: false
+  },
+  {
+    titulo: "Nivel 12 - Frases medias",
+    desc: "Frases con mayor complejidad",
+    ejercicios: ["aprender a escribir rapido es muy util", "la practica diaria mejora la velocidad"],
+    mostrarManos: false
+  },
+  {
+    titulo: "Nivel 13 - Frases largas",
+    desc: "Frases completas elaboradas",
+    ejercicios: ["la mecanografia es el arte de escribir a maquina con rapidez y precision"],
+    mostrarManos: false
+  },
+  {
+    titulo: "Nivel 14 - Textos cortos",
+    desc: "Párrafos pequeños",
+    ejercicios: ["practicar todos los dias durante unos minutos mejora mucho la velocidad de escritura"],
+    mostrarManos: false
+  },
+  {
+    titulo: "Nivel 15 - Textos completos",
+    desc: "Párrafos completos - Nivel máximo",
+    ejercicios: ["la mecanografia es una habilidad muy valorada. con practica diaria se mejora rapidamente"],
+    mostrarManos: false
+  }
+];
+const manosMap = {
+  'a': 'izq', 's': 'izq', 'd': 'izq', 'f': 'izq',
+  'q': 'izq', 'w': 'izq', 'e': 'izq', 'r': 'izq', 't': 'izq',
+  'z': 'izq', 'x': 'izq', 'c': 'izq', 'v': 'izq',
+  'j': 'der', 'k': 'der', 'l': 'der', 'ñ': 'der',
+  'y': 'der', 'u': 'der', 'i': 'der', 'o': 'der', 'p': 'der',
+  'b': 'der', 'n': 'der', 'm': 'der',
+  'g': 'izq', 'h': 'der',
+  ' ': 'ambas'
+};
+let nivelActual = 0;
+let ejercicioActual = 0;
+let posicion = 0;
+let aciertos = 0;
+let errores = 0;
+let erroresEjercicioActual = 0;
+let completado = false;
+let tiempoInicio = null;
+let timerPPM = null;
+let pulsaciones = 0;
+let autoAvanceTimer = null;
+function init() {
+  renderNiveles();
+  cargarEjercicio();
+  document.addEventListener('keydown', manejarTeclaGlobal);
+}
+function renderNiveles() {
+  const lista = document.getElementById('nivelesLista');
+  lista.innerHTML = '';
+  niveles.forEach((n, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'nivel-btn';
+    if (i === nivelActual) btn.classList.add('activo');
+    if (i < nivelActual) btn.classList.add('completado');
+    btn.textContent = `Nivel ${i + 1}`;
+    btn.onclick = () => cambiarNivel(i);
+    lista.appendChild(btn);
+  });
+}
+function cambiarNivel(indice) {
+  nivelActual = indice;
+  ejercicioActual = 0;
+  cargarEjercicio();
+}
+function cargarEjercicio() {
+  posicion = 0;
+  completado = false;
+  pulsaciones = 0;
+  erroresEjercicioActual = 0;
+  tiempoInicio = null;
+  if (timerPPM) { clearInterval(timerPPM); timerPPM = null; }
+  if (autoAvanceTimer) { clearTimeout(autoAvanceTimer); autoAvanceTimer = null; }
+  document.getElementById('btnSiguiente').disabled = true;
+  document.getElementById('btnSiguienteNivel').disabled = true;
+  document.getElementById('mensaje').textContent = '';
+  document.getElementById('mensaje').className = 'mensaje';
+  document.getElementById('barraProgreso').style.width = '0%';
+  document.getElementById('statPPM').textContent = '0';
+  const nivel = niveles[nivelActual];
+  document.getElementById('nivelTitulo').textContent = nivel.titulo;
+  document.getElementById('nivelDesc').textContent = nivel.desc;
+  document.getElementById('statNivel').textContent = nivelActual + 1;
+  const ayudaManos = document.getElementById('ayudaManos');
+  if (nivel.mostrarManos) {
+    ayudaManos.style.display = 'flex';
+    actualizarAyudaManos(nivel);
+  } else {
+    ayudaManos.style.display = 'none';
+  }
+  const texto = nivel.ejercicios[ejercicioActual];
+  const display = document.getElementById('textoDisplay');
+  display.innerHTML = '';
+  for (let i = 0; i < texto.length; i++) {
+    const span = document.createElement('span');
+    let clases = 'char ' + (i === 0 ? 'actual' : 'pendiente');
+    if (i === 0 && nivel.mostrarManos) {
+      const mano = manosMap[texto[i].toLowerCase()] || '';
+      if (mano === 'izq') clases += ' mano-izq';
+      else if (mano === 'der') clases += ' mano-der';
+    }
+    span.className = clases;
+    span.textContent = texto[i] === ' ' ? '\u00A0' : texto[i];
+    span.id = 'char' + i;
+    display.appendChild(span);
+  }
+  renderNiveles();
+}
+function actualizarAyudaManos(nivel) {
+  const texto = nivel.ejercicios[ejercicioActual];
+  const letrasUnicas = [...new Set(texto.toLowerCase().split(''))];
+  const izq = letrasUnicas.filter(l => manosMap[l] === 'izq').join(' ').toUpperCase();
+  const der = letrasUnicas.filter(l => manosMap[l] === 'der').join(' ').toUpperCase();
+  document.getElementById('teclasIzq').textContent = izq || '-';
+  document.getElementById('teclasDer').textContent = der || '-';
+}
+function actualizarPPM() {
+  if (!tiempoInicio) return;
+  const segundos = (Date.now() - tiempoInicio) / 1000;
+  if (segundos > 0) {
+    const ppm = Math.round((pulsaciones / segundos) * 60);
+    document.getElementById('statPPM').textContent = ppm;
+  }
+}
+function manejarTeclaGlobal(e) {
+  if (completado) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const btnSig = document.getElementById('btnSiguiente');
+      const btnNivSig = document.getElementById('btnSiguienteNivel');
+      if (!btnSig.disabled) {
+        siguienteEjercicio();
+      } else if (!btnNivSig.disabled) {
+        siguienteNivel();
+      } else {
+        reintentar();
+      }
+    }
+    return;
+  }
+  const nivel = niveles[nivelActual];
+  const texto = nivel.ejercicios[ejercicioActual];
+  if (e.key === 'Backspace') {
+    e.preventDefault();
+    if (posicion > 0) {
+      posicion--;
+      const spanActual = document.getElementById('char' + posicion);
+      let clases = 'char actual';
+      if (nivel.mostrarManos) {
+        const mano = manosMap[texto[posicion].toLowerCase()] || '';
+        if (mano === 'izq') clases += ' mano-izq';
+        else if (mano === 'der') clases += ' mano-der';
+      }
+      spanActual.className = clases;
+      if (posicion + 1 < texto.length) {
+        document.getElementById('char' + (posicion + 1)).className = 'char pendiente';
+      }
+      document.getElementById('mensaje').textContent = '';
+      document.getElementById('mensaje').className = 'mensaje';
+    }
+    return;
+  }
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    return;
+  }
+  if (e.key.length !== 1) return;
+  e.preventDefault();
+  if (!tiempoInicio) {
+    tiempoInicio = Date.now();
+    timerPPM = setInterval(actualizarPPM, 500);
+  }
+  pulsaciones++;
+  const charEsperado = texto[posicion];
+  const charEscrito = e.key;
+  const spanActual = document.getElementById('char' + posicion);
+  if (charEscrito === charEsperado) {
+    spanActual.className = 'char correcto';
+    aciertos++;
+    document.getElementById('statAciertos').textContent = aciertos;
+    document.getElementById('mensaje').textContent = '';
+    document.getElementById('mensaje').className = 'mensaje';
+  } else {
+    spanActual.className = 'char incorrecto';
+    errores++;
+    erroresEjercicioActual++;
+    document.getElementById('statErrores').textContent = errores;
+    const charMostrar = charEscrito === ' ' ? 'ESPACIO' : charEscrito.toUpperCase();
+    const esperadoMostrar = charEsperado === ' ' ? 'ESPACIO' : charEsperado.toUpperCase();
+    document.getElementById('mensaje').textContent = `✗ Pulsaste "${charMostrar}" pero era "${esperadoMostrar}"`;
+    document.getElementById('mensaje').className = 'mensaje error';
+  }
+  const total = aciertos + errores;
+  const precision = total > 0 ? Math.round((aciertos / total) * 100) : 100;
+  document.getElementById('statPrecision').textContent = precision + '%';
+  posicion++;
+  const porcentaje = Math.round((posicion / texto.length) * 100);
+  document.getElementById('barraProgreso').style.width = porcentaje + '%';
+  if (posicion < texto.length) {
+    const spanSiguiente = document.getElementById('char' + posicion);
+    let clases = 'char actual';
+    if (nivel.mostrarManos) {
+      const mano = manosMap[texto[posicion].toLowerCase()] || '';
+      if (mano === 'izq') clases += ' mano-izq';
+      else if (mano === 'der') clases += ' mano-der';
+    }
+    spanSiguiente.className = clases;
+  }
+  actualizarPPM();
+  if (posicion === texto.length) {
+    completarEjercicio();
+  }
+}
+function completarEjercicio() {
+  completado = true;
+  if (timerPPM) { clearInterval(timerPPM); timerPPM = null; }
+  const nivel = niveles[nivelActual];
+  const sinErrores = erroresEjercicioActual === 0;
+  const esUltimoEjercicio = ejercicioActual === nivel.ejercicios.length - 1;
+  const esUltimoNivel = nivelActual === niveles.length - 1;
+  const mensaje = document.getElementById('mensaje');
+  const btnSig = document.getElementById('btnSiguiente');
+  const btnNivSig = document.getElementById('btnSiguienteNivel');
+  if (esUltimoEjercicio && esUltimoNivel) {
+    mensaje.textContent = '🏆 ¡Felicidades! Has completado todos los niveles';
+    mensaje.className = 'mensaje exito';
+  } else if (sinErrores && esUltimoEjercicio) {
+    mensaje.textContent = '🎉 ¡Perfecto! Pasando al siguiente nivel en 2 segundos...';
+    mensaje.className = 'mensaje auto';
+    btnNivSig.disabled = false;
+    btnNivSig.focus();
+    autoAvanceTimer = setTimeout(() => siguienteNivel(), 2000);
+  } else if (sinErrores && !esUltimoEjercicio) {
+    mensaje.textContent = '✅ ¡Sin errores! Siguiente ejercicio en 2 segundos...';
+    mensaje.className = 'mensaje auto';
+    btnSig.disabled = false;
+    btnSig.focus();
+    autoAvanceTimer = setTimeout(() => siguienteEjercicio(), 2000);
+  } else if (!sinErrores && esUltimoEjercicio) {
+    mensaje.textContent = `⚠️ Completado con ${erroresEjercicioActual} error(es). Reintenta o continúa (Enter)`;
+    mensaje.className = 'mensaje error';
+    btnNivSig.disabled = false;
+    btnNivSig.focus();
+  } else {
+    mensaje.textContent = `⚠️ Completado con ${erroresEjercicioActual} error(es). Reintenta o continúa (Enter)`;
+    mensaje.className = 'mensaje error';
+    btnSig.disabled = false;
+    btnSig.focus();
+  }
+}
+function reintentar() {
+  if (autoAvanceTimer) { clearTimeout(autoAvanceTimer); autoAvanceTimer = null; }
+  cargarEjercicio();
+}
+function siguienteEjercicio() {
+  if (autoAvanceTimer) { clearTimeout(autoAvanceTimer); autoAvanceTimer = null; }
+  ejercicioActual++;
+  cargarEjercicio();
+}
+function siguienteNivel() {
+  if (autoAvanceTimer) { clearTimeout(autoAvanceTimer); autoAvanceTimer = null; }
+  nivelActual++;
+  ejercicioActual = 0;
+  cargarEjercicio();
+}
+init();
+</script>
+
+
+</body>
+</html>

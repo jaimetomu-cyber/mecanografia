@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mecanografía Martín T.H</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+            background-color: #e0f7fa;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        /* El título ahora es un enlace */
+        h1 a { 
+            color: #00838f; 
+            font-size: 3rem; 
+            text-decoration: none; /* Quita el subrayado del enlace */
+            display: inline-block;
+            margin-bottom: 5px;
+            transition: transform 0.2s;
+        }
+        h1 a:hover {
+            transform: scale(1.05); /* Efecto de que se puede pulsar */
+        }
+        
+        /* Botones de navegación */
+        .botones-menu {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .menu-btn {
+            font-size: 1.1rem;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            background-color: #ffb300;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .menu-btn:hover { background-color: #ffa000; transform: scale(1.05); }
+
+        /* Contenedores de las secciones */
+        .seccion {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px auto;
+            max-width: 650px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            position: relative; 
+        }
+        .activa { display: block; }
+
+        /* Estilos de Juego */
+        .palabra-objetivo, .letra-objetivo {
+            font-size: 4.5rem;
+            color: #d32f2f;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        input {
+            font-size: 3rem;
+            text-align: center;
+            padding: 10px;
+            width: 90%;
+            border: 4px solid #4caf50;
+            border-radius: 15px;
+            text-transform: uppercase;
+        }
+        input:focus { outline: none; border-color: #388e3c; }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* Barras de Progreso */
+        .progreso-contenedor {
+            width: 90%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin: 15px auto;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .progreso-barra {
+            height: 25px;
+            width: 0%;
+            background-color: #4caf50;
+            transition: width 0.4s ease;
+        }
+        .progreso-texto {
+            font-size: 1.2rem;
+            color: #555;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* Mensajes de Feedback */
+        .mensaje-exito {
+            font-size: 2.3rem;
+            color: #2e7d32;
+            margin-top: 15px;
+            min-height: 60px;
+            line-height: 1.3;
+        }
+        .mensaje-error {
+            color: #c62828 !important;
+            animation: vibrar 0.3s ease;
+        }
+
+        @keyframes vibrar {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-10px); }
+            80% { transform: translateX(10px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* --- PANELES DE INSIGNIAS --- */
+        .panel-trofeos {
+            display: none; 
+            position: fixed;
+            top: 20px;
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            width: 150px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .panel-trofeos.visible {
+            display: block;
+        }
+        .panel-trofeos h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+        }
+        
+        #panel-insignias-mates { left: 20px; border: 4px solid #2196f3; }
+        #panel-insignias-mates h3 { color: #1565c0; }
+        #panel-insignias-palabras { right: 20px; border: 4px solid #4caf50; }
+        #panel-insignias-palabras h3 { color: #2e7d32; }
+
+        .insignia {
+            font-size: 2.5rem;
+            display: inline-block;
+            margin: 5px;
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 1050px) {
+            .panel-trofeos {
+                position: static;
+                width: 90%;
+                max-width: 600px;
+                margin: 10px auto;
+                text-align: center;
+                max-height: none;
+                display: none; 
+            }
+        }
+
+        /* Herramientas de dibujo y colorear */
+        .herramientas-dibujo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .color-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid #ccc;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        .color-btn:hover { transform: scale(1.1); }
+        .color-btn.activo { border-color: #333; transform: scale(1.2); }
+        
+        .accion-btn {
+            padding: 10px 15px;
+            font-size: 1rem;
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        .accion-btn:hover { background-color: #b71c1c; }
+        .accion-btn.azul { background-color: #2196f3; }
+        .accion-btn.azul:hover { background-color: #1976d2; }
+        
+        /* Pizarra Libre y SVG */
+        #pizarra {
+            border: 5px solid #00838f;
+            border-radius: 15px;
+            background-color: white;
+            cursor: crosshair;
+            touch-action: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .svg-plantilla {
+            width: 100%;
+            max-width: 500px;
+            border: 5px solid #ff9800;
+            border-radius: 15px;
+            background-color: white;
+            cursor: crosshair;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin: 0 auto;
+        }
+        .pintable {
+            transition: fill 0.2s ease;
+        }
+        .pintable:hover {
+            opacity: 0.8;
+        }
+
+        /* --- MENÚ DE JUEGOS --- */
+        .botones-juegos {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .juego-btn {
+            font-size: 2.5rem;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .juego-btn:hover {
+            transform: scale(1.1);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="panel-insignias-mates" class="panel-trofeos">
+        <h3>Trofeos Cuentas 🧮</h3>
+        <div id="lista-insignias-mates"></div>
+    </div>
+
+    <div id="panel-insignias-palabras" class="panel-trofeos">
+        <h3>Trofeos Palabras 📝</h3>
+        <div id="lista-insignias-palabras"></div>
+    </div>
+
+    <h1><a href="index.html" title="Volver al Inicio">⌨️ Mecanografía Martín T.H</a></h1>
+    
+    <div class="botones-menu">
+        <button class="menu-btn" onclick="mostrarSeccion('iniciacion')">🔠 Letras</button>
+        <button class="menu-btn" onclick="mostrarSeccion('numeros')">🔢 Números</button>
+        <button class="menu-btn" onclick="mostrarSeccion('completar')">📝 Palabras</button>
+        <button class="menu-btn" onclick="mostrarSeccion('matematicas')">🧮 Cuentas</button>
+        <button class="menu-btn" style="background-color: #e91e63;" onclick="mostrarSeccion('dibujo')">🎨 Dibujo Libre</button>
+        <button class="menu-btn" style="background-color: #9c27b0;" onclick="mostrarSeccion('colorear')">🖍️ Colorear</button>
+        <button class="menu-btn" style="background-color: #00bcd4;" onclick="mostrarSeccion('juegos')">🎮 Juegos</button>
+		<button class="menu-btn" style="background-color: #0f3460;" onclick="window.location.href='mecanografia.html'">⌨️ Mecanografía</button>
+		
+		
+		
+    </div>
+
+
+    <div id="iniciacion" class="seccion activa">
+        <h2>Busca esta letra en el teclado 🔍</h2>
+        <div class="progreso-contenedor"><div id="prog-barra-letras" class="progreso-barra"></div></div>
+        <div id="prog-txt-letras" class="progreso-texto">Letras: 0 / 0</div>
+        <div id="letra-mostrar" class="letra-objetivo">A</div>
+        <div id="mensaje-letra" class="mensaje-exito"></div>
+    </div>
+
+    <div id="numeros" class="seccion">
+        <h2>Busca este número en el teclado 🔢</h2>
+        <div class="progreso-contenedor"><div id="prog-barra-numeros" class="progreso-barra"></div></div>
+        <div id="prog-txt-numeros" class="progreso-texto">Números: 0 / 0</div>
+        <div id="numero-mostrar" class="letra-objetivo">1</div>
+        <div id="mensaje-numero" class="mensaje-exito"></div>
+    </div>
+
+    <div id="completar" class="seccion">
+        <h2>Copia la palabra mágica ✨</h2>
+        <div class="progreso-contenedor"><div id="prog-barra-palabras" class="progreso-barra"></div></div>
+        <div id="prog-txt-palabras" class="progreso-texto">Palabras: 0 / 10</div>
+        <div id="palabra-mostrar" class="palabra-objetivo">COLE</div>
+        <input type="text" id="input-palabra" autocomplete="off" placeholder="Escribe aquí">
+        <div id="mensaje-palabra" class="mensaje-exito"></div>
+    </div>
+
+    <div id="matematicas" class="seccion">
+        <h2>¿Cuánto es? Piensa y escribe 🤔</h2>
+        <div class="progreso-contenedor"><div id="prog-barra-mates" class="progreso-barra"></div></div>
+        <div id="prog-txt-mates" class="progreso-texto">Cuentas: 0 / 10</div>
+        <div id="operacion-mostrar" class="palabra-objetivo">2 + 2 =</div>
+        <input type="number" id="input-matematicas" autocomplete="off" placeholder="?">
+        <div id="mensaje-matematicas" class="mensaje-exito"></div>
+    </div>
+
+    <div id="dibujo" class="seccion">
+        <h2>Pizarra Mágica 🎨</h2>
+        <div class="herramientas-dibujo">
+            <span id="paleta-dibujo" style="display:inline-flex; flex-wrap:wrap; gap:10px; justify-content:center;"></span>
+            <button id="btn-goma-dibujo" class="color-btn" style="background-color: #f5f5f5; font-size: 1.4rem; border: 3px dashed #999; margin-left: 5px;" onclick="seleccionarGoma()" title="Goma de borrar">🧽</button>
+        </div>
+        <button class="accion-btn" onclick="limpiarPizarra()">🗑️ Borrar Todo</button>
+        <br><br>
+        <canvas id="pizarra" width="550" height="350"></canvas>
+    </div>
+
+    <div id="colorear" class="seccion">
+        <h2>¡Rellena con el cubo mágico! 🖍️</h2>
+        
+        <div class="herramientas-dibujo">
+            <span id="paleta-colorear" style="display:inline-flex; flex-wrap:wrap; gap:10px; justify-content:center;"></span>
+            <button id="btn-goma-colorear" class="color-btn" style="background-color: #f5f5f5; font-size: 1.4rem; border: 3px dashed #999; margin-left: 5px;" onclick="seleccionarGoma()" title="Borrar color">🧽</button>
+        </div>
+
+        <div>
+            <button class="accion-btn azul" onclick="cambiarPlantilla('svg-paisaje')">🏞️ Paisaje</button>
+            <button class="accion-btn azul" onclick="cambiarPlantilla('svg-cohete')">🚀 Cohete</button>
+            <button class="accion-btn azul" onclick="cambiarPlantilla('svg-dino')">🦖 Dino</button>
+            <button class="accion-btn azul" onclick="cambiarPlantilla('svg-pirata')">🏴‍☠️ Pirata</button>
+            <button class="accion-btn azul" onclick="cambiarPlantilla('svg-goku')" style="background-color: #ff9800;">🐉 Goku</button>
+            <button class="accion-btn" onclick="limpiarPlantillas()">🔄 Limpiar Todo</button>
+        </div>
+        <br>
+
+        <svg id="svg-paisaje" viewBox="0 0 200 150" class="svg-plantilla" style="display:block;">
+            <rect x="0" y="0" width="200" height="150" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="40" cy="30" r="20" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="70,150 130,50 200,150" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="0,150 60,60 110,150" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="40,90 60,60 76,90 60,100" class="pintable" fill="white" stroke="black" stroke-width="1"/>
+            <rect x="0" y="120" width="200" height="30" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <rect x="160" y="90" width="10" height="30" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="165" cy="80" r="15" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+        </svg>
+
+        <svg id="svg-cohete" viewBox="0 0 200 200" class="svg-plantilla" style="display:none;">
+            <rect x="0" y="0" width="200" height="200" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="160" cy="40" r="30" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="150" cy="30" r="5" class="pintable" fill="white" stroke="black" stroke-width="1"/>
+            <circle cx="170" cy="50" r="8" class="pintable" fill="white" stroke="black" stroke-width="1"/>
+            <polygon points="30,20 35,35 50,35 38,45 42,60 30,50 18,60 22,45 10,35 25,35" class="pintable" fill="white" stroke="black" stroke-width="1"/>
+            <polygon points="80,150 100,190 120,150" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="60,120 30,160 80,140" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="140,120 170,160 120,140" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <ellipse cx="100" cy="100" rx="40" ry="60" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="100" cy="85" r="18" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="100" cy="85" r="12" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+        </svg>
+
+        <svg id="svg-dino" viewBox="0 0 200 200" class="svg-plantilla" style="display:none;">
+            <rect x="0" y="0" width="200" height="200" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <path d="M 40 140 Q 30 100 80 100 L 120 100 Q 150 100 150 130 L 150 140 Z" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <path d="M 120 100 L 120 50 Q 120 30 140 30 L 160 30 Q 170 30 170 45 L 140 45 L 140 100 Z" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="145" cy="38" r="3" fill="black" />
+            <rect x="50" y="140" width="15" height="30" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <rect x="80" y="140" width="15" height="30" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <rect x="120" y="140" width="15" height="30" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="50,110 60,90 70,105" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="70,105 80,85 90,100" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="90,100 100,80 110,100" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+        </svg>
+
+        <svg id="svg-pirata" viewBox="0 0 200 200" class="svg-plantilla" style="display:none;">
+            <rect x="0" y="0" width="200" height="200" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <ellipse cx="45" cy="130" rx="15" ry="25" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="45" cy="100" r="12" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="35,95 20,105 35,105" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="40" cy="98" r="2" fill="black"/>
+            <ellipse cx="50" cy="130" rx="8" ry="15" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <path d="M 60 130 L 30 200 L 170 200 L 140 130 Z" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="50,150 150,150 155,165 45,165" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <rect x="35" y="180" width="130" height="20" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <rect x="85" y="175" width="30" height="30" class="pintable" fill="white" stroke="black" stroke-width="4"/>
+            <circle cx="100" cy="95" r="40" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="140" cy="95" r="10" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="145" cy="110" r="6" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <path d="M 40 75 Q 100 20 160 75 Z" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <ellipse cx="100" cy="75" rx="70" ry="15" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <line x1="60" y1="85" x2="140" y2="105" stroke="black" stroke-width="2"/>
+            <circle cx="80" cy="92" r="13" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="120" cy="98" r="9" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="120" cy="98" r="3" fill="black"/>
+            <circle cx="100" cy="105" r="6" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <path d="M 85 120 Q 100 130 115 120" fill="none" stroke="black" stroke-width="2"/>
+            <line x1="115" y1="75" x2="130" y2="85" stroke="black" stroke-width="2"/>
+            <line x1="120" y1="78" x2="125" y2="72" stroke="black" stroke-width="2"/>
+            <line x1="125" y1="81" x2="130" y2="76" stroke="black" stroke-width="2"/>
+        </svg>
+
+		<svg id="svg-goku" viewBox="0 0 200 200" class="svg-plantilla" style="display:none;">
+            <rect x="0" y="0" width="200" height="200" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <path d="M 40 200 L 65 130 L 135 130 L 160 200 Z" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="65,130 135,130 100,180" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="80,130 120,130 100,160" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="55" cy="100" r="12" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="145" cy="100" r="12" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <path d="M 55 80 Q 55 145 100 145 Q 145 145 145 80 Z" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <path d="M 55 85 L 25 70 L 60 55 L 50 20 L 90 35 L 110 5 L 130 35 L 170 20 L 150 60 L 180 80 L 145 90 Q 155 110 135 105 L 130 80 L 110 95 L 100 75 L 90 95 L 70 80 L 65 105 Q 45 110 55 85 Z" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="65,90 95,100 95,95 65,85" class="pintable" fill="white" stroke="black" stroke-width="1"/>
+            <polygon points="135,90 105,100 105,95 135,85" class="pintable" fill="white" stroke="black" stroke-width="1"/>
+            <polygon points="70,105 92,108 92,100" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <polygon points="130,105 108,108 108,100" class="pintable" fill="white" stroke="black" stroke-width="2"/>
+            <circle cx="85" cy="104" r="2" fill="black"/>
+            <circle cx="115" cy="104" r="2" fill="black"/>
+            <path d="M 100 115 L 96 122 L 100 122" fill="none" stroke="black" stroke-width="2"/>
+            <line x1="90" y1="132" x2="110" y2="132" stroke="black" stroke-width="2"/>
+            <line x1="90" y1="132" x2="88" y2="130" stroke="black" stroke-width="2"/>
+            <line x1="110" y1="132" x2="112" y2="130" stroke="black" stroke-width="2"/>
+            <line x1="70" y1="120" x2="80" y2="118" stroke="black" stroke-width="1"/>
+            <line x1="130" y1="120" x2="120" y2="118" stroke="black" stroke-width="1"/>
+        </svg>
+
+    </div>
+
+    <div id="juegos" class="seccion">
+        <h2>¡Hora de Jugar! 🎮</h2>
+        <p style="font-size: 1.2rem; color: #555;">Elige a qué quieres jugar hoy:</p>
+        
+        <div class="botones-juegos">
+            <a href="juego_subaru.html" class="juego-btn" style="background-color: #87CEEB;">🚙 Subaru</a>
+            
+            <a href="juego_abeja.html" class="juego-btn" style="background-color: #ff9800; color: #333;">🐝 Abeja</a>
+			
+			<a href="juego_dino.html" class="juego-btn" style="background-color: #c68642; color: #333;">🦖 T-Rex</a>
+			
+			<a href="juego_pacman.html" class="juego-btn" style="background-color: #ffeb3b; color: #333;">👻 Pac-Man</a>
+			
+			<a href="juego_mario.html" class="juego-btn" style="background-color: #f44336; color: #333;">⭐ Super Mario</a>
+
+
+
+        </div>
+    </div>
+	
+
+    <script>
+        // --- COLORES Y GOMA DE BORRAR ---
+        const colores = [
+            '#000000', '#f44336', '#4caf50', '#2196f3', '#ffeb3b', 
+            '#9c27b0', '#ff9800', '#795548', '#c68642', '#ffcc99', '#ffffff'
+        ];
+        let colorPincel = '#000000'; 
+        let modoGoma = false;
+
+        function generarPaletas() {
+            let htmlPaleta = '';
+            colores.forEach(c => {
+                let claseActiva = c === '#000000' ? 'activo' : '';
+                let estiloExtra = c === '#ffffff' ? 'border: 3px dashed #ccc;' : '';
+                htmlPaleta += `<button class="color-btn ${claseActiva}" style="background-color: ${c}; ${estiloExtra}" onclick="seleccionarColor('${c}')"></button>`;
+            });
+            document.getElementById('paleta-dibujo').innerHTML = htmlPaleta;
+            document.getElementById('paleta-colorear').innerHTML = htmlPaleta;
+        }
+
+        function seleccionarColor(colorHex) {
+            modoGoma = false;
+            colorPincel = colorHex;
+            
+            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('activo'));
+            
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                if(btn.style.backgroundColor === colorHex || colorHex === rgbToHex(btn.style.backgroundColor)) {
+                    btn.classList.add('activo');
+                }
+            });
+        }
+
+        function seleccionarGoma() {
+            modoGoma = true;
+            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('activo'));
+            document.getElementById('btn-goma-dibujo').classList.add('activo');
+            document.getElementById('btn-goma-colorear').classList.add('activo');
+        }
+
+        function rgbToHex(rgb) {
+            if (rgb.startsWith('#')) return rgb;
+            let rgbArr = rgb.substring(4, rgb.length-1).replace(/ /g, '').split(',');
+            return "#" + (1 << 24 | rgbArr[0] << 16 | rgbArr[1] << 8 | rgbArr[2]).toString(16).slice(1);
+        }
+
+        // --- LÓGICA DE NAVEGACIÓN ---
+        function mostrarSeccion(id) {
+            document.querySelectorAll('.seccion').forEach(sec => sec.classList.remove('activa'));
+            document.getElementById(id).classList.add('activa');
+            if(id === 'completar') document.getElementById('input-palabra').focus();
+            if(id === 'matematicas') document.getElementById('input-matematicas').focus();
+            if(id === 'iniciacion' || id === 'numeros') document.body.focus();
+        }
+
+        function quitarTildes(texto) {
+            return texto.replace(/[ÁÀÄÂ]/ig, 'A').replace(/[ÉÈËÊ]/ig, 'E')
+                        .replace(/[ÍÌÏÎ]/ig, 'I').replace(/[ÓÒÖÔ]/ig, 'O')
+                        .replace(/[ÚÙÜÛ]/ig, 'U');
+        }
+
+        // --- FUNCIONES DEL PANEL DE TROFEOS ---
+        function mostrarPanelTrofeos(panelId) {
+            document.getElementById(panelId).classList.add('visible');
+        }
+
+        function añadirInsigniaVisual(insignia, contenedorId) {
+            let span = document.createElement("span");
+            span.className = "insignia";
+            span.textContent = insignia;
+            document.getElementById(contenedorId).appendChild(span);
+        }
+
+        // --- PALABRAS CON INSIGNIAS ---
+        const listaPalabrasBase = ["UNIÓN", "COLE", "LA RINCONADA", "CALDERA", "TORRALBA", "HERNÁNDEZ", "MARTÍN", "JIMENA", "JAIME", "JESSICA", "TRAGACETE", "LOLO", "INA", "MAJUELO", "GATO", "PATO", "PERRO", "VACA", "RANA", "OSO", "PEZ", "LORO", "LEÓN", "MONO", "TIGRE", "GALLO", "LOBO", "FOCA", "PUMA", "ROJO", "AZUL", "VERDE", "ROSA", "NEGRO", "BLANCO", "GRIS", "LILA", "UNO", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE", "DIEZ", "MAMÁ", "PAPÁ", "ABUELO", "ABUELA", "TÍO", "TÍA", "PRIMO", "BEBÉ", "AGUA", "PAN", "QUESO", "LECHE", "UVA", "MELÓN", "SOPA", "PERA", "LIMÓN", "ZUMO", "MIEL", "KIWI", "POLO", "TARTA", "MANO", "PIE", "OJO", "BOCA", "NARIZ", "PELO", "DEDO", "CARA", "SOL", "LUNA", "FLOR", "ÁRBOL", "RÍO", "MAR", "CIELO", "NUBE", "NIEVE", "RAYO", "MESA", "CASA", "SILLA", "CAMA", "VASO", "TAZA", "PLATO", "COCHE", "TREN", "MOTO", "BICI", "BOLA", "GLOBO", "LÁPIZ", "GOMA", "LIBRO", "PAPEL", "CAJA", "BOTA", "ROPA", "LAZO", "CUBO", "DÍA", "NOCHE", "HOY", "SÍ", "NO", "BIEN", "MAL", "HOLA", "ADIÓS"];
+        const insigniasPalabras = ["🥇", "🚀", "🦖", "🦸‍♂️", "🏆", "💎", "👑", "🦄", "🌟", "🍕"];
+        
+        let palabrasRestantes = [...listaPalabrasBase];
+        let palabraActual = "";
+        let palabrasAcertadas = 0;
+        let insigniasPalabrasGanadas = 0;
+        const META_PALABRAS = 10;
+        let esperandoSiguientePalabra = false;
+
+        function actualizarProgresoPalabras() {
+            document.getElementById('prog-barra-palabras').style.width = ((palabrasAcertadas / META_PALABRAS) * 100) + "%";
+            document.getElementById('prog-txt-palabras').textContent = `Palabras: ${palabrasAcertadas} / ${META_PALABRAS}`;
+        }
+
+        function nuevaPalabra() {
+            esperandoSiguientePalabra = false;
+            
+            if (palabrasAcertadas === META_PALABRAS) {
+                palabrasAcertadas = 0;
+                mostrarPanelTrofeos('panel-insignias-palabras');
+
+                let insignia = insigniasPalabras[insigniasPalabrasGanadas % insigniasPalabras.length];
+                insigniasPalabrasGanadas++;
+                añadirInsigniaVisual(insignia, 'lista-insignias-palabras');
+
+                alert(`¡ERES UN CAMPEÓN! 🎉\n¡Has ganado la insignia ${insignia} por escribir 10 palabras estupendamente!`);
+            }
+
+            if (palabrasRestantes.length === 0) { 
+                palabrasRestantes = [...listaPalabrasBase]; 
+            }
+            
+            let idx = Math.floor(Math.random() * palabrasRestantes.length);
+            palabraActual = palabrasRestantes[idx];
+            palabrasRestantes.splice(idx, 1);
+            
+            document.getElementById('palabra-mostrar').textContent = palabraActual;
+            document.getElementById('input-palabra').value = "";
+            document.getElementById('mensaje-palabra').textContent = "";
+            document.getElementById('mensaje-palabra').classList.remove('mensaje-error');
+            actualizarProgresoPalabras();
+        }
+
+        document.getElementById('input-palabra').addEventListener('input', function(e) {
+            if(esperandoSiguientePalabra) return;
+            
+            let textoEscrito = e.target.value.toUpperCase();
+            let msg = document.getElementById('mensaje-palabra');
+            let escritoLimpio = quitarTildes(textoEscrito);
+            let objetivoLimpio = quitarTildes(palabraActual);
+            
+            if (escritoLimpio === objetivoLimpio) {
+                esperandoSiguientePalabra = true;
+                palabrasAcertadas++;
+                actualizarProgresoPalabras();
+                msg.textContent = "¡MUY BIEN! 🎉";
+                msg.classList.remove('mensaje-error');
+                setTimeout(nuevaPalabra, 1300);
+                return;
+            }
+
+            let letrasIncorrectas = [];
+            let hayError = false;
+            for (let i = 0; i < escritoLimpio.length; i++) {
+                if (escritoLimpio[i] !== objetivoLimpio[i]) {
+                    hayError = true;
+                    letrasIncorrectas.push(textoEscrito[i] === " " ? "(espacio)" : textoEscrito[i]);
+                }
+            }
+
+            if (hayError) {
+                msg.classList.add('mensaje-error');
+                msg.textContent = `❌ Revisa las letras: ${[...new Set(letrasIncorrectas)].join(", ")}`;
+            } else {
+                msg.textContent = "";
+                msg.classList.remove('mensaje-error');
+            }
+        });
+
+        // --- LETRAS Y NÚMEROS ---
+        const alfabetoBase = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","Ñ","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+        const numerosBase = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+        let letrasRestantes = [...alfabetoBase], numerosRestantes = [...numerosBase];
+        let letraActual = "", numeroSueltoActual = "";
+        let letrasAcertadas = 0, numerosAcertados = 0;
+        let esperandoSiguienteTeclado = false;
+
+        function actualizarLetrasNums() {
+            document.getElementById('prog-barra-letras').style.width = ((letrasAcertadas / alfabetoBase.length) * 100) + "%";
+            document.getElementById('prog-txt-letras').textContent = `Letras: ${letrasAcertadas} / ${alfabetoBase.length}`;
+            document.getElementById('prog-barra-numeros').style.width = ((numerosAcertados / numerosBase.length) * 100) + "%";
+            document.getElementById('prog-txt-numeros').textContent = `Números: ${numerosAcertados} / ${numerosBase.length}`;
+        }
+
+        function nuevaLetra() {
+            esperandoSiguienteTeclado = false;
+            if (letrasRestantes.length === 0) { letrasRestantes = [...alfabetoBase]; letrasAcertadas = 0; }
+            let idx = Math.floor(Math.random() * letrasRestantes.length);
+            letraActual = letrasRestantes[idx];
+            letrasRestantes.splice(idx, 1);
+            document.getElementById('letra-mostrar').textContent = letraActual;
+            document.getElementById('mensaje-letra').textContent = "";
+            document.getElementById('mensaje-letra').classList.remove('mensaje-error');
+            actualizarLetrasNums();
+        }
+
+        function nuevoNumeroSuelto() {
+            esperandoSiguienteTeclado = false;
+            if (numerosRestantes.length === 0) { numerosRestantes = [...numerosBase]; numerosAcertados = 0; }
+            let idx = Math.floor(Math.random() * numerosRestantes.length);
+            numeroSueltoActual = numerosRestantes[idx];
+            numerosRestantes.splice(idx, 1);
+            document.getElementById('numero-mostrar').textContent = numeroSueltoActual;
+            document.getElementById('mensaje-numero').textContent = "";
+            document.getElementById('mensaje-numero').classList.remove('mensaje-error');
+            actualizarLetrasNums();
+        }
+
+        window.addEventListener('keydown', function(e) {
+            // Candado contra dejar la tecla pulsada y hacer trampa
+            if(e.repeat || esperandoSiguienteTeclado) return; 
+
+            if(e.key.length > 1) return; 
+            let teclaPulsada = e.key.toUpperCase();
+
+            if (document.getElementById('iniciacion').classList.contains('activa')) {
+                let msgLetra = document.getElementById('mensaje-letra');
+                if (quitarTildes(teclaPulsada) === quitarTildes(letraActual)) {
+                    esperandoSiguienteTeclado = true;
+                    letrasAcertadas++; actualizarLetrasNums();
+                    msgLetra.classList.remove('mensaje-error'); msgLetra.textContent = "¡EXCELENTE! 🌟";
+                    setTimeout(nuevaLetra, 1000);
+                } else if (msgLetra.textContent !== "¡EXCELENTE! 🌟") {
+                    msgLetra.classList.add('mensaje-error'); msgLetra.textContent = "❌ Incorrecto";
+                    msgLetra.style.animation = 'none'; msgLetra.offsetHeight; msgLetra.style.animation = null; 
+                }
+            }
+
+            if (document.getElementById('numeros').classList.contains('activa')) {
+                let msgNumero = document.getElementById('mensaje-numero');
+                if (teclaPulsada === numeroSueltoActual) {
+                    esperandoSiguienteTeclado = true;
+                    numerosAcertados++; actualizarLetrasNums();
+                    msgNumero.classList.remove('mensaje-error'); msgNumero.textContent = "¡GENIAL! 🚀";
+                    setTimeout(nuevoNumeroSuelto, 1000);
+                } else if (msgNumero.textContent !== "¡GENIAL! 🚀") {
+                    msgNumero.classList.add('mensaje-error'); msgNumero.textContent = "❌ Incorrecto";
+                    msgNumero.style.animation = 'none'; msgNumero.offsetHeight; msgNumero.style.animation = null; 
+                }
+            }
+        });
+
+        // --- MATEMÁTICAS CON INSIGNIAS ---
+        const baseSumas = [], baseRestas = [];
+        for (let i = 1; i <= 9; i++) {
+            for (let j = 1; j <= 9; j++) baseSumas.push({ text: `${i} + ${j} =`, res: i + j });
+            for (let j = 1; j <= i; j++) baseRestas.push({ text: `${i} - ${j} =`, res: i - j });
+        }
+        
+        const insigniasMates = ["🍎", "🧩", "⚡", "🏅", "👾", "🎲", "🎯", "💡", "🧲", "🤖"];
+        let insigniasMatesGanadas = 0;
+
+        let sumasRestantes = [...baseSumas], restasRestantes = [...baseRestas];
+        let loteActualDe10 = [], operacionActual = null, matesAcertadas = 0;
+        const META_CUENTAS = 10;
+        let esperandoSiguienteCuenta = false;
+
+        function generarNuevoLote() {
+            let lote = [];
+            for(let i=0; i<5; i++) {
+                if(sumasRestantes.length === 0) sumasRestantes = [...baseSumas];
+                let idx = Math.floor(Math.random() * sumasRestantes.length);
+                lote.push(sumasRestantes[idx]); sumasRestantes.splice(idx, 1);
+            }
+            for(let i=0; i<5; i++) {
+                if(restasRestantes.length === 0) restasRestantes = [...baseRestas];
+                let idx = Math.floor(Math.random() * restasRestantes.length);
+                lote.push(restasRestantes[idx]); restasRestantes.splice(idx, 1);
+            }
+            for (let i = lote.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [lote[i], lote[j]] = [lote[j], lote[i]];
+            }
+            return lote;
+        }
+
+        function nuevaOperacion() {
+            esperandoSiguienteCuenta = false;
+            
+            if (matesAcertadas === META_CUENTAS) {
+                matesAcertadas = 0;
+                mostrarPanelTrofeos('panel-insignias-mates');
+
+                let insignia = insigniasMates[insigniasMatesGanadas % insigniasMates.length];
+                insigniasMatesGanadas++;
+                añadirInsigniaVisual(insignia, 'lista-insignias-mates');
+
+                alert(`¡ERES UN GENIO! 🧠\n¡Has ganado la insignia ${insignia} por completar 10 cuentas seguidas!`);
+                loteActualDe10 = generarNuevoLote();
+            } else if (loteActualDe10.length === 0) { 
+                loteActualDe10 = generarNuevoLote(); 
+            }
+
+            operacionActual = loteActualDe10.pop(); 
+            document.getElementById('operacion-mostrar').textContent = operacionActual.text;
+            document.getElementById('input-matematicas').value = "";
+            document.getElementById('mensaje-matematicas').textContent = "";
+            document.getElementById('mensaje-matematicas').classList.remove('mensaje-error');
+            document.getElementById('input-matematicas').focus();
+            
+            document.getElementById('prog-barra-mates').style.width = ((matesAcertadas / META_CUENTAS) * 100) + "%";
+            document.getElementById('prog-txt-mates').textContent = `Cuentas: ${matesAcertadas} / ${META_CUENTAS}`;
+        }
+
+        document.getElementById('input-matematicas').addEventListener('input', function(e) {
+            if(esperandoSiguienteCuenta) return;
+
+            let val = e.target.value.trim();
+            let msg = document.getElementById('mensaje-matematicas');
+            if (val === "") { msg.textContent = ""; msg.classList.remove('mensaje-error'); return; }
+            let res = operacionActual.res.toString();
+            
+            if (val === res) {
+                esperandoSiguienteCuenta = true;
+                matesAcertadas++; msg.classList.remove('mensaje-error'); msg.textContent = "¡CEREBRITO! 🧠✨";
+                setTimeout(nuevaOperacion, 1500);
+            } else if (res.startsWith(val)) {
+                msg.textContent = ""; msg.classList.remove('mensaje-error');
+            } else if (msg.textContent !== "❌ Incorrecto") {
+                msg.classList.add('mensaje-error'); msg.textContent = "❌ Incorrecto";
+                msg.style.animation = 'none'; msg.offsetHeight; msg.style.animation = null; 
+            }
+        });
+
+        // --- 5. DIBUJO LIBRE ---
+        const canvas = document.getElementById('pizarra');
+        const ctx = canvas.getContext('2d');
+        let dibujando = false;
+        ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        function interactuarCanvas(e) {
+            const rect = canvas.getBoundingClientRect();
+            let x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+            let y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+            if (e.type.includes('touch')) e.preventDefault();
+
+            if(e.type === 'mousedown' || e.type === 'touchstart') { dibujando = true; ctx.beginPath(); ctx.moveTo(x, y); }
+            if((e.type === 'mousemove' || e.type === 'touchmove') && dibujando) {
+                ctx.lineWidth = modoGoma ? 30 : 6; 
+                ctx.lineCap = 'round'; 
+                ctx.strokeStyle = modoGoma ? 'white' : colorPincel;
+                ctx.lineTo(x, y); ctx.stroke();
+            }
+            if(e.type === 'mouseup' || e.type === 'mouseout' || e.type === 'touchend') { dibujando = false; }
+        }
+
+        canvas.addEventListener('mousedown', interactuarCanvas);
+        canvas.addEventListener('mousemove', interactuarCanvas);
+        canvas.addEventListener('mouseup', interactuarCanvas);
+        canvas.addEventListener('mouseout', interactuarCanvas);
+        canvas.addEventListener('touchstart', interactuarCanvas, {passive: false});
+        canvas.addEventListener('touchmove', interactuarCanvas, {passive: false});
+        canvas.addEventListener('touchend', interactuarCanvas);
+
+        function limpiarPizarra() { ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+
+        // --- 6. COLOREAR (CUBO MÁGICO) ---
+        function cambiarPlantilla(id) {
+            document.querySelectorAll('.svg-plantilla').forEach(svg => svg.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function limpiarPlantillas() {
+            document.querySelectorAll('.pintable').forEach(el => el.setAttribute('fill', 'white'));
+        }
+
+        document.querySelectorAll('.pintable').forEach(elemento => {
+            elemento.addEventListener('click', function() {
+                this.setAttribute('fill', modoGoma ? 'white' : colorPincel);
+            });
+            elemento.addEventListener('touchstart', function(e) {
+                e.preventDefault(); 
+                this.setAttribute('fill', modoGoma ? 'white' : colorPincel);
+            }, {passive: false});
+        });
+
+// Inicializar
+        generarPaletas();
+        nuevaPalabra();
+        nuevaLetra();
+        nuevoNumeroSuelto();
+        nuevaOperacion();
+        
+        // Comprobar si venimos de jugar a un juego
+        if (window.location.hash === '#juegos') {
+            mostrarSeccion('juegos');
+            // Limpiamos la URL para que no se quede el #juegos enganchado
+            history.replaceState(null, null, ' '); 
+        } else {
+            mostrarSeccion('iniciacion');
+        }
+    </script>
+</body>
+</html>
